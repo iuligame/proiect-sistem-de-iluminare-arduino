@@ -59,3 +59,6 @@ typings/
 
 # next.js build output
 .next
+
+# this file exceeds GitHub 100mb filezise limit
+nw.dll
