@@ -62,3 +62,8 @@ typings/
 
 # this file exceeds GitHub 100mb filezise limit
 nw.dll
+
+# Involt
+platforms/
+plugins/
+Involt.zip
