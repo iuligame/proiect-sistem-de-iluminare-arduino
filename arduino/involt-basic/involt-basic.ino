@@ -44,8 +44,8 @@ String fname;
 #define LIGHT2 6
 #define LIGHT3 5
 #define LIGHT4 4
-#define LIGHT_OFF 1
-#define LIGHT_ON 0
+#define LIGHT_OFF 0
+#define LIGHT_ON 1
 
 void setup()
 {
@@ -60,7 +60,7 @@ void setup()
   */
   pinMode(LIGHT_SENSOR, INPUT_PULLUP);
   pinMode(LIGHT1, OUTPUT);
-  pinMode(LIGHT2, OUTPUT); 
+  pinMode(LIGHT2, OUTPUT);
   pinMode(LIGHT3, OUTPUT);
   pinMode(LIGHT4, OUTPUT);
 }
@@ -68,23 +68,22 @@ void setup()
 void loop()
 {
   involtReceive();
+  delay(10);
 
-  //involtSend(2, digitalRead(2));
+  /* 
+    Cand butoanele HTML sunt activate vom activa si luminile corespunzatoare.
+  */
+  digitalWrite(LIGHT1, involtPin[7]);
+  digitalWrite(LIGHT2, involtPin[6]);
+  digitalWrite(LIGHT3, involtPin[5]);
+  digitalWrite(LIGHT4, involtPin[4]);
+
+  /*
+    Citim de la pinul digital corespunzator senzorului de lumina si trimitem 
+    informatia catre pinul virtual cu acelasi numar.
+  */
   int LS = digitalRead(LIGHT_SENSOR);
-
-  if (LS == OUTSIDE_DARK) {
-    digitalWrite(LIGHT1, LIGHT_ON);
-    digitalWrite(LIGHT2, LIGHT_ON);
-    digitalWrite(LIGHT3, LIGHT_ON);
-    digitalWrite(LIGHT4, LIGHT_ON);
-  } else {
-    digitalWrite(LIGHT1, LIGHT_OFF);
-    digitalWrite(LIGHT2, LIGHT_OFF);
-    digitalWrite(LIGHT3, LIGHT_OFF);
-    digitalWrite(LIGHT4, LIGHT_OFF);
-  }
-
-  delay(1000); 
+  involtSend(LIGHT_SENSOR, LS);
 
   //Clear the function to trigger it only once.
   fname = "";
