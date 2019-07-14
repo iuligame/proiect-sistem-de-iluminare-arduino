@@ -6,3 +6,7 @@
 - NW.js v0.39.2 SDK - https://nwjs.io/
 - Moment.js - https://momentjs.com/
 - Lodash - https://lodash.com/
+
+## Schematic
+
+![schematic](sistem-iluminare-montaj-tehnic_bb.png)
