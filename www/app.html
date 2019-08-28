@@ -1,34 +1,237 @@
 <!doctype html>
-<html lang="en">
+<html lang="ro">
+
 <head>
-	<title>Involt</title>
-	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+	<title>Sistem de Iluminare</title>
+	<meta name="viewport"
+		content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
 	<script src="core/jquery/jquery-2.1.0.min.js"></script>
 	<script src="core/jquery/jquery.nouislider.min.js"></script>
 	<script src="core/jquery/jquery.knob.js"></script>
 	<script src="core/jquery/insQ.min.js"></script>
 	<script src="settings.js"></script>
+	<script src="moment.min.js"></script>
+	<script src="lodash.js"></script>
 	<script src="core/bridge.js"></script>
 	<script src="core/framework.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/framework.css">
 
+	<style>
+		input[type="time"]::-webkit-clear-button {
+			display: none;
+		}
 
+		.involt-input[type="text"],
+		.involt-input[type="number"] {
+			width: auto;
+		}
+
+		.sectiune {
+			display: flex;
+		}
+
+		.lumina-titlu {
+			margin: 10px 10px 0;
+		}
+
+		.lumina-control {
+			display: flex;
+		}
+
+		.lumina-button {
+			margin: 10px 0;
+		}
+
+		.lumina-button.active {
+			background-color: yellow;
+		}
+
+		.lumina-program-toggle.off,
+		.lumina-senzor-toggle.off {
+			background-color: red;
+		}
+
+		.lumina-program-toggle.on,
+		.lumina-senzor-toggle.on {
+			background-color: green;
+		}
+	</style>
 </head>
 
 <body>
-	
+	<h2>Intrerupatoare</h2>
+	<div class="sectiune">
+		<div>
+			<p class="lumina-titlu">Lumina 1</p>
+			<div class="lumina-control">
+				<input type="number" class="ard involt-input P7" value="0" min="0" max="1" />
+				<button class="lumina-button">💡</button>
+			</div>
+		</div>
+		<div>
+			<p class="lumina-titlu">Lumina 2</p>
+			<div class="lumina-control">
+				<input type="number" class="ard involt-input P6" value="0" min="0" max="1" />
+				<button class="lumina-button">💡</button>
+			</div>
+		</div>
+		<div>
+			<p class="lumina-titlu">Lumina 3</p>
+			<div class="lumina-control">
+				<input type="number" class="ard involt-input P5" value="0" min="0" max="1" />
+				<button class="lumina-button">💡</button>
+			</div>
+		</div>
+		<div>
+			<p class="lumina-titlu">Lumina 4</p>
+			<div class="lumina-control">
+				<input type="number" class="ard involt-input P4" value="0" min="0" max="1" />
+				<button class="lumina-button">💡</button>
+			</div>
+		</div>
+	</div>
+	<h2>Program iluminare</h2>
+	<div class="sectiune">
+		<div>
+			<p class="lumina-titlu">Ora aprindere:</p>
+			<input id="ora-aprindere" type="time" value="19:00" />
+		</div>
+		<div>
+			<p class="lumina-titlu">Ora stingere:</p>
+			<input id="ora-stingere" type="time" value="08:00" />
+		</div>
+		<div>
+			<p class="lumina-titlu">Activare</p>
+			<button class="lumina-program-toggle off">OFF</button>
+		</div>
+	</div>
+	<h2>Senzor lumina</h2>
+	<div class="sectiune">
+		<div>
+			<p class="lumina-titlu">
+				Nivel lumina
+			</p>
+			<div class="lumina-senzor"></div>
+		</div>
+		<div>
+			<p class="lumina-titlu">Activare</p>
+			<button class="lumina-senzor-toggle off">OFF</button>
+		</div>
+	</div>
 
 
+	<script>
+		function aprindeToateLuminile() {
+			$('.ard.P7').updateValue(1, true).sendValue();
+			$('.ard.P6').updateValue(1, true).sendValue();
+			$('.ard.P5').updateValue(1, true).sendValue();
+			$('.ard.P4').updateValue(1, true).sendValue();
 
-	
-	<!--This is the homepage of your App. Put your Layout Here-->
-	
-	<div id="involtThankYou">Thank you for choosing Involt.</div>
+			$('.lumina-button').addClass('active');
+		}
 
+		function stingeToateLuminile() {
+			$('.ard.P7').updateValue(0, true).sendValue();
+			$('.ard.P6').updateValue(0, true).sendValue();
+			$('.ard.P5').updateValue(0, true).sendValue();
+			$('.ard.P4').updateValue(0, true).sendValue();
 
+			$('.lumina-button').removeClass('active');
+		}
 
+		/* 
+			Cand se apasa pe butonul din dreptul unui input vrem sa alternam 
+			valoarea inputului din 0 in 1 si viceversa.
+		*/
+		$('.lumina-button').on('click', function () {
+			let input = this.previousElementSibling;
+			let value = input.value;
 
+			if (value == 0) {
+				$(input).updateValue(1, true).sendValue();
+				this.classList.add('active');
+			} else {
+				$(input).updateValue(0, true).sendValue();
+				this.classList.remove('active');
+			}
+		});
 
+		/*
+			La fiecare 5 secunde vom verifica daca ora curenta este egala cu ora de 
+			aprindere sau de stingere a luminilor. Cand orele sunt egale vom modifica
+			valoarea input-ului care controleaza pin-ul fiecarei lumini. 
+			Involt va transmite aceasta informatie si catre Arduino in mod automat.
+		*/
+		let inputOraAprindere = document.querySelector('#ora-aprindere');
+		let inputOraStingere = document.querySelector('#ora-stingere');
+		let intervalLumina;
+
+		function verificaOreIluminare() {
+			let oraAprindere = inputOraAprindere.value;
+			let oraStingere = inputOraStingere.value;
+			let timp = moment().format('HH:mm');
+
+			if (timp === oraAprindere) {
+				aprindeToateLuminile();
+			} else if (timp === oraStingere) {
+				stingeToateLuminile();
+			}
+		}
+
+		$('.lumina-program-toggle').on('click', function () {
+			if (intervalLumina) {
+				clearInterval(intervalLumina);
+				intervalLumina = null;
+				this.classList.add('off');
+				this.classList.remove('on');
+				this.textContent = 'OFF';
+			} else {
+				intervalLumina = setInterval(verificaOreIluminare, 5000);
+				this.classList.add('on');
+				this.classList.remove('off');
+				this.textContent = 'ON';
+			}
+		});
+
+		/*
+			Cand primim date prin pinul virtual nr2, al senzorului de lumina, 
+			vrem sa afisam o reprezentare grafica a acestui informatii.
+		*/
+		let iconSoare = "🌞";
+		let iconLuna = "🌜";
+		let luminaSenzor = document.querySelector(".lumina-senzor");
+		let senzorControleazaLumini = false;
+
+		involtListenForPin[2] = _.throttle(function (index, value) {
+			if (value == 0) {
+				luminaSenzor.textContent = iconSoare;
+
+				if (senzorControleazaLumini) {
+					stingeToateLuminile();
+				}
+			} else {
+				luminaSenzor.textContent = iconLuna;
+
+				if (senzorControleazaLumini) {
+					aprindeToateLuminile();
+				}
+			}
+		}, 500);
+
+		$(".lumina-senzor-toggle").on("click", function () {
+			if (senzorControleazaLumini == true) {
+				senzorControleazaLumini = false;
+				this.textContent = 'OFF';
+				this.classList.add("off");
+				this.classList.remove("on");
+			} else {
+				senzorControleazaLumini = true;
+				this.textContent = 'ON';
+				this.classList.add("on");
+				this.classList.remove("off");
+			}
+		});
+	</script>
 </body>
 
 </html>
