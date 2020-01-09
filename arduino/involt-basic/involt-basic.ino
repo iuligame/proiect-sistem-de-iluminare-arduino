@@ -34,18 +34,14 @@ String fname;
   intensitatea luminoasa 
 */
 #define LIGHT_SENSOR 2
-#define OUTSIDE_DARK 1
-#define OUTSIDE_LIGHT 0
 /* 
-  Definim pinii de control pentru cele 4 relee care
+  Definim pinii de control pentru cele 4 MOSFETuri care
   controleaza cate un bec cu incandescenta fiecare.
 */
-#define LIGHT1 7
-#define LIGHT2 6
-#define LIGHT3 5
-#define LIGHT4 4
-#define LIGHT_OFF 0
-#define LIGHT_ON 1
+#define LIGHT1 11
+#define LIGHT2 10
+#define LIGHT3 9
+#define LIGHT4 6
 
 void setup()
 {
@@ -58,7 +54,6 @@ void setup()
     In functie de ce dorim sa facem trebuie sa setam pinii cu care 
     vom lucra in mod INPUT sau OUTPUT.
   */
-  pinMode(LIGHT_SENSOR, INPUT_PULLUP);
   pinMode(LIGHT1, OUTPUT);
   pinMode(LIGHT2, OUTPUT);
   pinMode(LIGHT3, OUTPUT);
@@ -73,16 +68,16 @@ void loop()
   /* 
     Cand butoanele HTML sunt activate vom activa si luminile corespunzatoare.
   */
-  digitalWrite(LIGHT1, involtPin[7]);
-  digitalWrite(LIGHT2, involtPin[6]);
-  digitalWrite(LIGHT3, involtPin[5]);
-  digitalWrite(LIGHT4, involtPin[4]);
+  analogWrite(LIGHT1, involtPin[11]);
+  analogWrite(LIGHT2, involtPin[10]);
+  analogWrite(LIGHT3, involtPin[9]);
+  analogWrite(LIGHT4, involtPin[6]);
 
   /*
     Citim de la pinul digital corespunzator senzorului de lumina si trimitem 
     informatia catre pinul virtual cu acelasi numar.
   */
-  int LS = digitalRead(LIGHT_SENSOR);
+  int LS = analogRead(LIGHT_SENSOR);
   involtSend(LIGHT_SENSOR, LS);
 
   //Clear the function to trigger it only once.

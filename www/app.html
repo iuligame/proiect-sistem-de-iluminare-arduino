@@ -64,28 +64,28 @@
 		<div>
 			<p class="lumina-titlu">Lumina 1</p>
 			<div class="lumina-control">
-				<input type="number" class="ard involt-input P7" value="0" min="0" max="1" />
+				<input type="range" class="ard involt-input P11" value="0" min="0" max="255" step="10" />
 				<button class="lumina-button">💡</button>
 			</div>
 		</div>
 		<div>
 			<p class="lumina-titlu">Lumina 2</p>
 			<div class="lumina-control">
-				<input type="number" class="ard involt-input P6" value="0" min="0" max="1" />
+				<input type="range" class="ard involt-input P10" value="0" min="0" max="255" step="10" />
 				<button class="lumina-button">💡</button>
 			</div>
 		</div>
 		<div>
 			<p class="lumina-titlu">Lumina 3</p>
 			<div class="lumina-control">
-				<input type="number" class="ard involt-input P5" value="0" min="0" max="1" />
+				<input type="range" class="ard involt-input P9" value="0" min="0" max="255" step="10" />
 				<button class="lumina-button">💡</button>
 			</div>
 		</div>
 		<div>
 			<p class="lumina-titlu">Lumina 4</p>
 			<div class="lumina-control">
-				<input type="number" class="ard involt-input P4" value="0" min="0" max="1" />
+				<input type="range" class="ard involt-input P6" value="0" min="0" max="255" step="10" />
 				<button class="lumina-button">💡</button>
 			</div>
 		</div>
@@ -121,22 +121,48 @@
 
 
 	<script>
-		function aprindeToateLuminile() {
-			$('.ard.P7').updateValue(1, true).sendValue();
-			$('.ard.P6').updateValue(1, true).sendValue();
-			$('.ard.P5').updateValue(1, true).sendValue();
-			$('.ard.P4').updateValue(1, true).sendValue();
 
-			$('.lumina-button').addClass('active');
+		function citesteIntensitateLumini() {
+			let P = involt.pin.P;
+
+			return (P[11] + P[10] + P[9] + P[6]) / 4;
+		}
+
+		function seteazaIntensitateaLuminilor(value) {
+			$('.ard.P11').updateValue(value, true).sendValue();
+			$('.ard.P10').updateValue(value, true).sendValue();
+			$('.ard.P9').updateValue(value, true).sendValue();
+			$('.ard.P6').updateValue(value, true).sendValue();
+
+			if (value < 20) {
+				$('.lumina-button').removeClass('active');
+			} else {
+				$('.lumina-button').addClass('active');
+			}
+
+		}
+		function cresteIntesitateaLuninilor(){
+			let intensitateLumini = citesteIntensitateLumini();
+
+			if (intensitateLumini <= 250){
+				seteazaIntensitateaLuminilor(intensitateLumini + 5);
+			}
+		}
+
+		function scadeIntesitateaLuminilor(){
+			let intensitateLumini = citesteIntensitateLumini();
+
+			if (intensitateLumini >= 5){
+				seteazaIntensitateaLuminilor(intensitateLumini - 5);
+			}
+		}
+
+		function aprindeToateLuminile() {
+			seteazaIntensitateaLuminilor(255);
 		}
 
 		function stingeToateLuminile() {
-			$('.ard.P7').updateValue(0, true).sendValue();
-			$('.ard.P6').updateValue(0, true).sendValue();
-			$('.ard.P5').updateValue(0, true).sendValue();
-			$('.ard.P4').updateValue(0, true).sendValue();
-
-			$('.lumina-button').removeClass('active');
+			seteazaIntensitateaLuminilor(0);
 		}
 
 		/* 
@@ -148,7 +174,7 @@
 			let value = input.value;
 
 			if (value == 0) {
-				$(input).updateValue(1, true).sendValue();
+				$(input).updateValue(255, true).sendValue();
 				this.classList.add('active');
 			} else {
 				$(input).updateValue(0, true).sendValue();
@@ -203,20 +229,23 @@
 		let senzorControleazaLumini = false;
 
 		involtListenForPin[2] = _.throttle(function (index, value) {
-			if (value == 0) {
-				luminaSenzor.textContent = iconSoare;
-
+			let valoareSenzor = value;
+			
+			if (valoareSenzor < 350) {
+				luminaSenzor.textContent = valoareSenzor + " " + iconSoare;
 				if (senzorControleazaLumini) {
-					stingeToateLuminile();
+					scadeIntesitateaLuminilor();	
 				}
-			} else {
-				luminaSenzor.textContent = iconLuna;
 
+			} else if (valoareSenzor >= 350 && valoareSenzor <= 400){
+				luminaSenzor.textContent = valoareSenzor + " " + iconSoare;
+			} else {
+				luminaSenzor.textContent = valoareSenzor + " " + iconLuna;
 				if (senzorControleazaLumini) {
-					aprindeToateLuminile();
+					cresteIntesitateaLuninilor();
 				}
 			}
-		}, 500);
+		}, 100);
 
 		$(".lumina-senzor-toggle").on("click", function () {
 			if (senzorControleazaLumini == true) {

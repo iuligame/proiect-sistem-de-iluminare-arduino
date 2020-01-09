@@ -2,5 +2,5 @@
     "board": "arduino:avr:uno",
     "programmer": "AVRISP mkII",
     "sketch": "arduino\\involt-basic\\involt-basic.ino",
-    "port": "COM4"
+    "port": "COM3"
 }
